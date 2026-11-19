@@ -1,8 +1,8 @@
 // App shell cache so the page opens offline. Network first, so updates show up immediately when online.
 // Supabase API calls (other origin) are never cached.
-const CACHE = 'kedi-v5';
+const CACHE = 'kedi-v8';
 const SHELL = ['./', 'index.html', 'config.js', 'items.js', 'manifest.webmanifest', 'icon-192.png', 'icon-512.png',
-  'ui/btn_brown.png', 'ui/btn_cream.png', 'ui/btn_peach.png', 'ui/cat_face.png', 'ui/cat_idle.png', 'ui/cat_sleep.png', 'ui/heart_empty.png', 'ui/heart_full.png', 'ui/panel.png', 'ui/paw.png', 'ui/paw_empty.png', 'ui/paw_icon.png',
+  'ui/btn_brown.png', 'ui/btn_cream.png', 'ui/btn_peach.png', 'ui/bird_idle.png', 'ui/cat_face.png', 'ui/cat_idle.png', 'ui/cat_sleep.png', 'ui/heart_empty.png', 'ui/heart_full.png', 'ui/panel.png', 'ui/paw.png', 'ui/paw_empty.png', 'ui/paw_icon.png', 'ui/avatar.png',
   'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js'];
 
 self.addEventListener('install', (e) => e.waitUntil(caches.open(CACHE).then((c) => c.addAll(SHELL))));

@@ -16,25 +16,47 @@
           --px:'Press Start 2P', ui-monospace, system-ui, sans-serif; }
   * { box-sizing: border-box; }
   body { margin:0; background:var(--bg); color:var(--ink); font:17px/1.4 system-ui, sans-serif;
-         padding: max(16px, env(safe-area-inset-top)) 16px max(16px, env(safe-area-inset-bottom)); }
-  main { max-width:480px; margin:0 auto; display:flex; flex-direction:column; gap:16px; }
+         padding: 0 16px max(16px, env(safe-area-inset-bottom)); }
+  main { max-width:480px; margin:0 auto; display:flex; flex-direction:column; gap:12px; }
   img { image-rendering: pixelated; }
   h1, h2 { font-family:var(--px); font-weight:400; line-height:1.5; }
-  h1 { font-size:16px; margin:0; display:flex; align-items:center; gap:8px; }
-  .mascot { width:64px; height:64px; flex:none; background:url(ui/cat_idle.png) 0 0 / 640px 64px; image-rendering:pixelated;
+  /* Slim top bar: who we are on the left, the "Hayvanlar" chooser on the right (same as on the device) */
+  .top { position:sticky; top:0; z-index:5; display:flex; align-items:center; gap:8px; background:var(--bg);
+         padding: max(8px, env(safe-area-inset-top)) 0 8px; border-bottom:3px solid var(--panel); }
+  h1 { font-size:10px; margin:0; flex:1; min-width:0; }
+  .mascot { width:32px; height:32px; flex:none; background:url(ui/cat_idle.png) 0 0 / 320px 32px; image-rendering:pixelated;
             animation: idle 1.5s steps(10) infinite; }
-  @keyframes idle { to { background-position-x: -640px; } }
+  @keyframes idle { to { background-position-x: -320px; } }
   @media (prefers-reduced-motion: reduce) { .mascot { animation:none; } }
   button, input, textarea { font:inherit; color:inherit; }
   button:focus-visible, input:focus-visible, textarea:focus-visible { outline:3px solid var(--focus); outline-offset:2px; }
   /* 14x14 pixel buttons, 9-sliced at 3x */
-  button { border:15px solid transparent; border-image:url(ui/btn_cream.png) 5 fill / 15px stretch; border-radius:0;
-           background:none; padding:0 2px; min-height:56px; white-space:nowrap; font-weight:700; cursor:pointer; color:var(--ink);
+  button { border:12px solid transparent; border-image:url(ui/btn_cream.png) 5 fill / 12px stretch; border-radius:0;
+           background:none; padding:0 2px; min-height:48px; white-space:nowrap; font-weight:700; cursor:pointer; color:var(--ink);
            display:inline-flex; align-items:center; justify-content:center; gap:8px; image-rendering:pixelated; }
   button:disabled { opacity:.5; cursor:default; }
-  .pick[aria-pressed="true"], .primary { border-image-source:url(ui/btn_brown.png); color:#FFF6EA; }
+  .primary { border-image-source:url(ui/btn_brown.png); color:#FFF6EA; }
   .secondary { border-image-source:url(ui/btn_peach.png); }
-  button img { height:30px; width:auto; flex:none; }
+  button img { height:24px; width:auto; flex:none; }
+  .chip { flex:none; border-width:10px; border-image-width:10px; min-height:44px; font-size:14px; gap:6px; }
+  .chip img { height:15px; }
+  /* Chooser: a bottom sheet on the native <dialog> */
+  dialog { width:100%; max-width:480px; margin:auto auto 0; border:0; border-top:3px solid var(--ink); background:var(--bg); color:var(--ink);
+           padding:16px 16px max(16px, env(safe-area-inset-bottom)); }
+  dialog::backdrop { background:rgba(90,62,54,.5); }
+  dialog h2 { font-size:13px; margin:0 0 12px; }
+  .choices { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px; }
+  .choice { min-width:0; padding:0; white-space:normal; font-size:15px; flex-direction:column; justify-content:flex-start; gap:4px; }
+  .choice[aria-pressed="true"] { border-image-source:url(ui/btn_peach.png); }
+  .choice:disabled { opacity:1; }
+  .portrait { width:64px; height:64px; background:center / contain no-repeat; image-rendering:pixelated; }
+  .portrait.cat { background:url(ui/cat_idle.png) 0 0 / 640px 64px; }
+  .portrait.bird { background-image:url(ui/bird_idle.png); }
+  .choice.locked .portrait { filter:brightness(0) opacity(.3); }
+  .choice .muted { font-weight:400; font-size:13px; }
+  .mini { display:block; width:100%; height:6px; background:#FFFAF3; overflow:hidden; }
+  .mini i { display:block; height:100%; width:0; }
+  .mini.food i { background:#E0A526; } .mini.love i { background:#E8588F; }
   input, textarea { width:100%; background:#FFFAF3; border:3px solid var(--ink); border-radius:0; padding:12px; box-shadow:3px 3px 0 var(--panel); }
   label { display:block; font-size:14px; color:var(--dim); margin-bottom:4px; }
   .row { display:grid; grid-template-columns:1fr 1fr; gap:6px 12px; }
@@ -50,9 +72,15 @@
   .muted { color:var(--dim); font-size:14px; }
   .sleepy { display:none; width:60px; height:30px; vertical-align:middle; }
   #status-cat.asleep .sleepy { display:inline-block; }
-  .toast { min-height:1.4em; text-align:center; margin:8px 0; }
+  /* Floats over the page so a message never pushes the buttons around */
+  .toast { position:fixed; z-index:6; left:16px; right:16px; bottom:max(16px, env(safe-area-inset-bottom)); max-width:448px; margin:0 auto;
+           padding:10px 12px; text-align:center; background:var(--ink); color:#FFF6EA; pointer-events:none; }
+  .toast:empty { visibility:hidden; }
+  .toast.err { background:var(--alert); color:#fff; }
   .err { color:var(--alert); }
   button.link { border:0; border-image:none; background:none; color:var(--dim); min-height:48px; padding:4px 12px; font-weight:400; text-decoration:underline; }
+  .tabs { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin:0 0 8px; }
+  .tab[aria-pressed="true"] { border-image-source:url(ui/btn_peach.png); }
   .slots { display:grid; grid-template-columns:repeat(3, minmax(0, 1fr)); gap:8px; }
   .slot, .item { border-width:12px; border-image-width:12px; min-height:96px; padding:0; white-space:normal; min-width:0; font-weight:400; font-size:13px;
                  display:flex; flex-direction:column; align-items:center; justify-content:space-between; gap:4px; }
@@ -72,12 +100,30 @@
     @keyframes pop { 0% { transform:scale(.85); opacity:0; } 60% { transform:scale(1.06); } 100% { transform:none; opacity:1; } }
   }
   @media (prefers-reduced-motion: reduce) { .fill { transition:none; } }
+  .block { display:flex; align-items:center; gap:14px; }
+  .block .who { position:relative; flex:none; width:80px; height:80px; }
+  .block .who img { width:80px; height:80px; display:block; border:3px solid var(--ink); filter:grayscale(.6); }
+  .stamp { position:absolute; left:-8px; right:-8px; bottom:10px; transform:rotate(-12deg); text-align:center; font:8px/1.6 var(--px);
+           color:var(--alert); border:2px solid var(--alert); background:rgba(255,241,228,.85); padding:2px 0; }
+  .block p { margin:0 0 4px; } .block button { margin-top:4px; }
+  @media (prefers-reduced-motion: no-preference) {
+    .block.hit { animation: shake .3s linear, flash .6s ease-out; }
+    .block.hit .stamp { animation: slam .5s cubic-bezier(.2,1.6,.4,1); }
+    @keyframes shake { 20% { transform:translateX(-6px); } 40% { transform:translateX(6px); } 60% { transform:translateX(-4px); } 80% { transform:translateX(3px); } }
+    @keyframes flash { 0% { box-shadow:inset 0 0 0 100vmax rgba(179,38,30,.35); } 100% { box-shadow:inset 0 0 0 100vmax rgba(179,38,30,0); } }
+    @keyframes slam { 0% { transform:rotate(-12deg) scale(2.5); opacity:0; } 60% { transform:rotate(-12deg) scale(.9); opacity:1; } 100% { transform:rotate(-12deg) scale(1); } }
+  }
+  .peace { text-align:center; margin:0; }
   [hidden] { display:none !important; }
 </style>
 </head>
 <body>
 <main>
-  <h1><span class="mascot" role="img" aria-label="Bitto"></span>Bitto & Bergamot</h1>
+  <header class="top">
+    <span class="mascot" role="img" aria-label="Bitto"></span>
+    <h1>Bitto & Bergamot</h1>
+    <button id="petsBtn" class="chip" aria-haspopup="dialog" hidden><img src="ui/paw_icon.png" alt="" width="18" height="15">Hayvanlar</button>
+  </header>
 
   <form id="login" class="card stack" hidden>
     <div><label for="email">E-posta</label><input id="email" type="email" autocomplete="username" required></div>
@@ -89,9 +135,21 @@
   <p id="toast" class="toast" role="status" aria-live="polite"></p>
 
   <section id="app" class="stack" hidden>
-    <div class="row" role="group" aria-label="Hayvan seç">
-      <button class="pick cat" data-pet="cat" aria-pressed="true">Bitto</button>
-      <button class="pick bird" data-pet="bird" aria-pressed="false">Bergamot</button>
+    <div id="block" class="card block" hidden>
+      <div class="who"><img src="ui/avatar.png" alt="Efe"><span class="stamp">ENGELLENDİ</span></div>
+      <div><p><b>Damla seni engelledi 🔒</b></p><p class="muted" id="blockInfo"></p>
+        <button id="sorry" class="secondary">Özür dile</button></div>
+    </div>
+    <p id="peace" class="muted peace" hidden>Barıştınız ❤️</p>
+    <div class="card pet" id="status-cat"><h2>Bitto <span class="muted"><img class="sleepy" src="ui/cat_sleep.png" alt=""> <span data-state></span></span></h2>
+      <div class="bar"><span>Mama</span><div class="track food"><div class="fill" data-k="fullness"></div></div></div>
+      <div class="bar"><span>Sevgi</span><div class="track love"><div class="fill" data-k="happiness"></div></div></div>
+      <p class="muted streak" data-streak></p>
+    </div>
+    <div class="card pet" id="status-bird" hidden><h2>Bergamot <span class="muted"><span data-state></span></span></h2>
+      <div class="bar"><span>Mama</span><div class="track food"><div class="fill" data-k="fullness"></div></div></div>
+      <div class="bar"><span>Sevgi</span><div class="track love"><div class="fill" data-k="happiness"></div></div></div>
+      <p class="muted streak" data-streak></p>
     </div>
     <div class="row">
       <button id="feed" class="primary"><img src="ui/paw_icon.png" alt="" width="36" height="30">Mama ver</button>
@@ -107,16 +165,6 @@
       <button class="secondary" style="width:100%;margin-top:8px" type="submit">Gönder</button>
     </form>
 
-    <div class="card pet" id="status-cat"><h2>Bitto <span class="muted"><img class="sleepy" src="ui/cat_sleep.png" alt=""> <span data-state></span></span></h2>
-      <div class="bar"><span>Mama</span><div class="track food"><div class="fill" data-k="fullness"></div></div></div>
-      <div class="bar"><span>Sevgi</span><div class="track love"><div class="fill" data-k="happiness"></div></div></div>
-      <p class="muted streak" data-streak></p>
-    </div>
-    <div class="card pet" id="status-bird"><h2>Bergamot <span class="muted"><span data-state></span></span></h2>
-      <div class="bar"><span>Mama</span><div class="track food"><div class="fill" data-k="fullness"></div></div></div>
-      <div class="bar"><span>Sevgi</span><div class="track love"><div class="fill" data-k="happiness"></div></div></div>
-      <p class="muted streak" data-streak></p>
-    </div>
     <div class="card">
       <h2>Son cevaplar</h2>
       <ul class="replies" id="replies"></ul>
@@ -124,6 +172,10 @@
     <div class="card">
       <h2>Eşyalar <span class="muted" id="decorFor"></span></h2>
       <p class="muted" id="progress" style="margin:0 0 8px"></p>
+      <div class="tabs" id="places" role="group" aria-label="Yer">
+        <button class="tab" data-place="home" aria-pressed="true">Ev</button>
+        <button class="tab" data-place="outside" aria-pressed="false">Dışarı</button>
+      </div>
       <div class="slots" id="slots"></div>
       <div id="picker" hidden>
         <p class="muted" id="pickerTitle" style="margin:12px 0 8px"></p>
@@ -135,6 +187,17 @@
   </section>
 </main>
 
+<dialog id="pets" aria-labelledby="petsTitle">
+  <h2 id="petsTitle">Hayvanlar</h2>
+  <div class="choices">
+    <button class="choice" data-pet="cat" aria-pressed="true"><span class="portrait cat"></span>Bitto
+      <span class="mini food"><i data-k="fullness"></i></span><span class="mini love"><i data-k="happiness"></i></span><span class="muted" data-info></span></button>
+    <button class="choice" data-pet="bird" aria-pressed="false"><span class="portrait bird"></span>Bergamot
+      <span class="mini food"><i data-k="fullness"></i></span><span class="mini love"><i data-k="happiness"></i></span><span class="muted" data-info></span></button>
+  </div>
+  <form method="dialog"><button class="secondary" style="width:100%">Kapat</button></form>
+</dialog>
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <script src="config.js"></script>
 <script src="items.js"></script>
@@ -144,6 +207,8 @@ const toast = (text, isErr = false) => {
   const t = $('toast');
   t.className = 'toast'; void t.offsetWidth; // restart the pop animation
   t.textContent = text; t.className = 'toast' + (isErr ? ' err' : text ? ' pop' : '');
+  clearTimeout(toast.timer);
+  if (text) toast.timer = setTimeout(() => { t.textContent = ''; t.className = 'toast'; }, isErr ? 8000 : 4000);
 };
 
 if (!window.KEDI_CONFIG) {
@@ -173,34 +238,48 @@ async function refresh() {
   device = devs[0] || null;
   if (!device) { $('seen').textContent = 'Kayıtlı cihaz yok (README: cihazı kaydet).'; return; }
   $('seen').textContent = device.last_seen_at ? `Cihaz en son ${ago(device.last_seen_at)} göründü.` : 'Cihaz henüz hiç bağlanmadı.';
-  const { data: rows, error: stErr } = await db.from('device_status').select('pet, fullness, happiness, asleep, feed_streak, pet_streak, best_streak, updated_at').eq('device_id', device.id);
+  const cols = 'pet, fullness, happiness, asleep, feed_streak, pet_streak, best_streak, updated_at';
+  let { data: rows, error: stErr } = await db.from('device_status').select(cols + ', blocked, block_count').eq('device_id', device.id);
+  const hasBlock = !stErr;
+  if (stErr && /blocked|block_count/.test(stErr.message)) // migration not run yet: fall back, feature stays hidden
+    ({ data: rows, error: stErr } = await db.from('device_status').select(cols).eq('device_id', device.id));
   if (stErr) toast(/best_streak|column/i.test(stErr.message) ? 'Veritabanı güncel değil (best_streak eksik): migrasyonu çalıştır.' : 'Durum okunamadı: ' + stErr.message, true);
   best = Math.max(0, ...(rows || []).map((x) => x.best_streak || 0));
   for (const p of ['cat', 'bird']) {
     const r = (rows || []).find((x) => x.pet === p);
     const box = $('status-' + p);
-    box.querySelectorAll('.fill').forEach((f) => { f.style.width = (r ? r[f.dataset.k] : 0) + '%'; });
+    document.querySelectorAll(`#status-${p} [data-k], .choice[data-pet="${p}"] [data-k]`).forEach((f) => { f.style.width = (r ? r[f.dataset.k] : 0) + '%'; });
+    document.querySelector(`.choice[data-pet="${p}"] [data-info]`).textContent = r ? `Seri: ${r.feed_streak} / ${r.pet_streak} gün` : 'henüz rapor yok';
     box.classList.toggle('asleep', !!(r && r.asleep));
     box.querySelector('[data-streak]').textContent = r ? `Mama serisi: ${r.feed_streak} gün · Sevgi serisi: ${r.pet_streak} gün` : '';
     box.querySelector('[data-state]').textContent = !r ? 'henüz rapor yok' : r.asleep ? 'uyuyor 💤' : `${ago(r.updated_at)}`;
   }
   syncBird();
+  loadBlock(hasBlock ? rows : null);
   loadReplies();
   if (openSlot === null) loadDecor(); else renderDecor();
 }
 
 function syncBird() {
-  const locked = birdLocked(), b = document.querySelector('.pick.bird');
+  const locked = birdLocked(), b = document.querySelector('.choice[data-pet="bird"]');
   b.disabled = locked;
-  b.replaceChildren(document.createTextNode('Bergamot'));
+  b.classList.toggle('locked', locked);
+  b.querySelectorAll('.mini').forEach((e) => { e.hidden = locked; });
   if (locked) {
-    const d = document.createElement('span'); d.className = 'days'; d.textContent = `🔒 ${BIRD_DAYS}. günde`; b.append(d);
+    b.querySelector('[data-info]').textContent = `🔒 ${BIRD_DAYS}. gün`;
     b.setAttribute('aria-label', `Bergamot, kilitli, ${BIRD_DAYS}. günde açılır`);
   } else b.removeAttribute('aria-label');
-  if (locked && pet === 'bird') { pet = 'cat'; openSlot = null; document.querySelectorAll('.pick').forEach((x) => x.setAttribute('aria-pressed', x.dataset.pet === 'cat')); }
+  if (locked && pet === 'bird') setPet('cat');
   const box = $('status-bird');
   box.querySelector('.bar').parentNode.querySelectorAll('.bar, [data-streak]').forEach((e) => { e.hidden = locked; });
   if (locked) box.querySelector('[data-state]').textContent = `🔒 ${BIRD_DAYS}. günde açılır`;
+}
+
+function setPet(p) {
+  pet = p;
+  openSlot = null;
+  document.querySelectorAll('.choice').forEach((x) => x.setAttribute('aria-pressed', x.dataset.pet === p));
+  for (const k of ['cat', 'bird']) $('status-' + k).hidden = k !== p;
 }
 
 async function loadReplies() {
@@ -218,6 +297,47 @@ async function loadReplies() {
   $('replies').replaceChildren(...items);
 }
 
+// ---- "Efe'yi engelle": banner while the device reports blocked; short "Barıştınız" note after an unblock ----
+const PEACE_MS = 6 * 3600 * 1000;
+let sorryUntil = 0;
+const istDay = (d) => new Date(d).toLocaleDateString('en-CA', { timeZone: 'Europe/Istanbul' });
+
+async function loadBlock(rows) {
+  if (!rows) { $('block').hidden = $('peace').hidden = true; return; }
+  const blocked = rows.some((r) => r.blocked), total = Math.max(0, ...rows.map((r) => r.block_count || 0));
+  const { data } = await db.from('events').select('id, kind, created_at').eq('device_id', device.id)
+    .in('kind', ['block', 'unblock']).order('id', { ascending: false }).limit(50);
+  const evs = data || [], today = istDay(Date.now());
+  const todayN = evs.filter((e) => e.kind === 'block' && istDay(e.created_at) === today).length;
+  $('block').hidden = !blocked;
+  const last = evs.find((e) => e.kind === 'block'); // newest block; animate only when it is new since the last view
+  let seen = null;
+  try { seen = localStorage.getItem('lastBlockId'); if (last) localStorage.setItem('lastBlockId', last.id); } catch (e) {}
+  if (blocked && last && String(last.id) !== seen) hit();
+  $('blockInfo').textContent = `Bugün ${todayN} kez · toplam ${total} kez engellendin.`;
+  $('peace').hidden = blocked || !(evs[0] && evs[0].kind === 'unblock' && Date.now() - new Date(evs[0].created_at) < PEACE_MS);
+  syncSorry();
+}
+
+function hit() {
+  const c = $('block');
+  c.classList.remove('hit'); void c.offsetWidth; c.classList.add('hit');
+  setTimeout(() => c.classList.remove('hit'), 700);
+  if (navigator.vibrate && !matchMedia('(prefers-reduced-motion: reduce)').matches) navigator.vibrate([40, 30, 60]);
+}
+
+function syncSorry() {
+  const left = sorryUntil - Date.now();
+  $('sorry').disabled = left > 0;
+  if (left > 0) setTimeout(syncSorry, left);
+}
+
+$('sorry').addEventListener('click', async () => {
+  $('sorry').disabled = true;
+  if (await send({ kind: 'apology' }, "Özrün Bitto'ya iletildi 🙏")) { sorryUntil = Date.now() + 60000; syncSorry(); }
+  else $('sorry').disabled = false;
+});
+
 async function send(row, okText) {
   if (!device) return toast('Kayıtlı cihaz yok.', true);
   if (row.pet === 'bird' && birdLocked()) return toast(`Bergamot ${BIRD_DAYS}. günde açılır.`, true), false;
@@ -230,6 +350,7 @@ async function send(row, okText) {
 function show(session) {
   $('login').hidden = !!session;
   $('app').hidden = !session;
+  $('petsBtn').hidden = !session;
   clearInterval(timer);
   if (session) { refresh(); timer = setInterval(refresh, 30000); }
 }
@@ -242,17 +363,28 @@ $('login').addEventListener('submit', async (e) => {
 });
 $('logout').addEventListener('click', () => db.auth.signOut());
 
-document.querySelectorAll('.pick').forEach((b) => b.addEventListener('click', () => {
-  pet = b.dataset.pet;
-  document.querySelectorAll('.pick').forEach((x) => x.setAttribute('aria-pressed', x === b));
-  openSlot = null;
+$('petsBtn').addEventListener('click', () => $('pets').showModal());
+$('pets').addEventListener('click', (e) => { if (e.target === $('pets')) $('pets').close(); }); // tap on the backdrop
+document.querySelectorAll('.choice').forEach((b) => b.addEventListener('click', () => {
+  setPet(b.dataset.pet);
   renderDecor();
+  $('pets').close();
 }));
 
-// ---- Decorations: 3 slots per pet; current state = latest decor event per (pet, slot) ----
-const SLOT_NAMES = ['Duvar', 'Sol zemin', 'Sağ zemin'];
+// ---- Decorations: 6 slots per pet (3 at home, 3 outside); current state = latest decor event per (pet, slot) ----
+// first = the place's first slot number in the database; kinds = what each of its three slots takes (see items.js).
+const PLACES = {
+  home: { first: 0, names: ['Duvar', 'Sol zemin', 'Sağ zemin'], kinds: ['wall', 'floor', 'floor'] },
+  outside: { first: 3, names: ['Arka alan', 'Sol zemin', 'Sağ zemin'], kinds: ['back', 'ground', 'ground'] },
+};
+const SLOT_COUNT = 6;
 const itemById = Object.fromEntries(ITEMS.map((i) => [i.id, i]));
-let decor = { cat: [null, null, null], bird: [null, null, null] }, openSlot = null;
+const emptyDecor = () => ({ cat: Array(SLOT_COUNT).fill(null), bird: Array(SLOT_COUNT).fill(null) });
+let decor = emptyDecor(), openSlot = null, place = 'home';
+const slotName = (s) => (s < PLACES.outside.first ? PLACES.home : PLACES.outside).names[s % 3];
+// An item fits a slot when it is from the same place, of the slot's kind, and unlocked (the device checks the same).
+const fits = (item, slot) => !item || (slot >= PLACES[place].first && slot < PLACES[place].first + 3 && item.place === place
+  && item.kind === PLACES[place].kinds[slot - PLACES[place].first] && (item.tier || 0) <= unlockLevel());
 
 function itemButton(cls, item, label) {
   const b = document.createElement('button');
@@ -266,7 +398,9 @@ function itemButton(cls, item, label) {
 
 function renderDecor() {
   $('decorFor').textContent = `(${pet === 'cat' ? 'Bitto' : 'Bergamot'})`;
-  $('slots').replaceChildren(...SLOT_NAMES.map((name, slot) => {
+  document.querySelectorAll('#places .tab').forEach((x) => x.setAttribute('aria-pressed', x.dataset.place === place));
+  $('slots').replaceChildren(...PLACES[place].names.map((name, i) => {
+    const slot = PLACES[place].first + i;
     const cur = itemById[decor[pet][slot]];
     const b = itemButton('slot', cur, cur ? `${name}: ${cur.name}` : `${name}: boş`);
     b.setAttribute('aria-pressed', openSlot === slot);
@@ -278,9 +412,9 @@ function renderDecor() {
     : `En iyi seri: ${best} gün · ${lvl ? 'sonraki' : 'ilk'} ödül ${UNLOCK_DAYS[lvl]} gün`;
   $('picker').hidden = openSlot === null;
   if (openSlot === null) return;
-  $('pickerTitle').textContent = `${SLOT_NAMES[openSlot]} için eşya seç:`;
-  const kind = openSlot === 0 ? 'wall' : 'floor';
-  const choices = [null, ...ITEMS.filter((i) => i.kind === kind)];
+  $('pickerTitle').textContent = `${slotName(openSlot)} için eşya seç:`;
+  const kind = PLACES[place].kinds[openSlot - PLACES[place].first];
+  const choices = [null, ...ITEMS.filter((i) => i.place === place && i.kind === kind)];
   $('grid').replaceChildren(...choices.map((item) => {
     const b = itemButton('item', item, item ? item.name : 'Boş bırak');
     const tier = item ? item.tier || 0 : 0;
@@ -297,23 +431,29 @@ function renderDecor() {
 }
 
 async function placeItem(slot, item) {
-  if (item && (item.tier || 0) > unlockLevel()) return;
+  if (!fits(item, slot)) return;
   const ok = await send({ kind: 'decor', pet, slot, item: item ? item.id : null },
-    `Yeni görünüm! ${item ? item.name : 'Boş'} → ${SLOT_NAMES[slot]}. Cihaz internete bağlanınca yerleşir.`);
+    `Yeni görünüm! ${item ? item.name : 'Boş'} → ${place === 'home' ? 'Ev' : 'Dışarı'}, ${slotName(slot)}. Cihaz internete bağlanınca yerleşir.`);
   if (ok) { decor[pet][slot] = item ? item.id : null; openSlot = null; renderDecor(); }
 }
 
 async function loadDecor() {
   const { data } = await db.from('events').select('pet, slot, item').eq('device_id', device.id)
     .eq('kind', 'decor').order('id', { ascending: false }).limit(200);
-  decor = { cat: [null, null, null], bird: [null, null, null] };
+  decor = emptyDecor();
   const seen = new Set();
   for (const e of data || []) {
     const key = e.pet + e.slot;
-    if (!seen.has(key)) { seen.add(key); decor[e.pet][e.slot] = e.item; }
+    if (decor[e.pet] && e.slot >= 0 && e.slot < SLOT_COUNT && !seen.has(key)) { seen.add(key); decor[e.pet][e.slot] = e.item; }
   }
   renderDecor();
 }
+
+document.querySelectorAll('#places .tab').forEach((b) => b.addEventListener('click', () => {
+  place = b.dataset.place;
+  openSlot = null;
+  renderDecor();
+}));
 
 $('feed').addEventListener('click', async () => {
   $('feed').disabled = true;
